@@ -1,0 +1,10 @@
+<nav class="flex justify-end p-3 bg-purple-900">
+<%= if @current_user do %>
+  <span class="p-2 m-2 text-white font-semibold"><%= @current_user.email %></span>
+  <%= link "Settings", to: Routes.user_settings_path(@conn, :edit), class: "hidden p-2 m-2 bg-white rounded-md text-purple-900 font-semibold" %>
+  <%= link "Log out", to: Routes.user_session_path(@conn, :delete), method: :delete, class: "p-2 m-2 bg-white rounded-md text-purple-900 font-semibold" %>
+<% else %>
+  <%= link "Register", to: Routes.user_registration_path(@conn, :new), class: "p-2 m-2 bg-white rounded-md text-purple-900 font-semibold" %>
+  <%= link "Log in", to: Routes.user_session_path(@conn, :new), class: "p-2 m-2 bg-white rounded-md text-purple-900 font-semibold" %>
+<% end %>
+</nav>

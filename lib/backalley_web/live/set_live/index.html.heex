@@ -1,0 +1,41 @@
+<div class="p-6">
+    <div class="flex flex-col gap-10">
+        <div>
+            <button phx-click="create-game" class="border-2 border-purple-900 text-purple-900 rounded-md p-2">New Game</button>
+        </div>
+        <div>
+            <button phx-click="refresh" class="border-2 border-purple-900 text-purple-900 rounded-md p-2">Refresh</button>
+        </div>
+        <div>
+            <h3 class="text-purple-900">Standings</h3>
+            <%= for {name, wins} <- @standings do %>
+                <%= "#{name}: #{wins}" %>
+            <% end %>
+        </div>
+        <div>
+            <h3 class="text-purple-900">Games</h3>
+            <div class="flex flex-wrap items-start gap-4">
+                <%= for game <- @games do %>
+                    <div class="border-2 border-purple-900 rounded-md p-2"> 
+                        <%= link to: Routes.set_game_path(@socket, :index, game), class: "grid grid-cols-2 gap-6 items-center"  do %>
+                            <%= for player_score <- @game_map[game.id] || [] do %>
+                                <div class="text-purple-900">
+                                    <%= "#{player_score.name}: #{player_score.score}" %>
+                                </div>
+                            <% end %>
+                            <div class="text-purple-900">
+                                <%= game.name || "Game #{game.id}" %>
+                            </div>
+                        <% end %>
+                    </div>
+                <% end %>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+
+

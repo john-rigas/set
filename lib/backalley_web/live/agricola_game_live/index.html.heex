@@ -1,0 +1,37 @@
+<h1>Listing Agricola games</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <.modal return_to={Routes.agricola_game_index_path(@socket, :index)}>
+    <.live_component
+      module={BackalleyWeb.AgricolaGameLive.FormComponent}
+      id={@agricola_game.id || :new}
+      title={@page_title}
+      action={@live_action}
+      agricola_game={@agricola_game}
+      return_to={Routes.agricola_game_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="agricola_games">
+    <%= for agricola_game <- @agricola_games do %>
+      <tr id={"agricola_game-#{agricola_game.id}"}>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.agricola_game_show_path(@socket, :show, agricola_game) %></span>
+          <span><%= live_patch "Edit", to: Routes.agricola_game_index_path(@socket, :edit, agricola_game) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: agricola_game.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Agricola game", to: Routes.agricola_game_index_path(@socket, :new) %></span>

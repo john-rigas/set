@@ -1,0 +1,139 @@
+# migrate
+
+## Section
+
+```elixir
+Mix.install([:postgrex])
+```
+
+```elixir
+{:ok, pid} =
+  Postgrex.start_link(
+    hostname: "localhost",
+    username: "postgres",
+    password: "postgres",
+    database: "backalley_dev",
+    port: 5330
+  )
+```
+
+```elixir
+{:ok, pid_prod} =
+  Postgrex.start_link(
+    hostname: "localhost",
+    username: "backalley",
+    password: "hHxDZGrIDQwxE3Q",
+    database: "backalley",
+    port: 5432
+  )
+```
+
+```elixir
+parse_result = fn %Postgrex.Result{columns: columns, rows: rows} ->
+  col_map =
+    Enum.with_index(columns) |> Enum.reduce(%{}, fn {col, idx}, acc -> Map.put(acc, idx, col) end)
+
+  Enum.map(rows, fn row ->
+    Enum.with_index(row)
+    |> Enum.reduce(%{}, fn {val, idx}, acc -> Map.put(acc, col_map[idx], val) end)
+  end)
+end
+```
+
+```elixir
+parse_result
+```
+
+```elixir
+users = Postgrex.query!(pid, "SELECT * from users", []) |> parse_result.()
+games = Postgrex.query!(pid, "SELECT * from set.games", []) |> parse_result.()
+players = Postgrex.query!(pid, "SELECT * from set.players", []) |> parse_result.()
+status = Postgrex.query!(pid, "SELECT * from set.status", []) |> parse_result.()
+calls = Postgrex.query!(pid, "SELECT * from set.calls", []) |> parse_result.()
+call_cards = Postgrex.query!(pid, "SELECT * from set.call_cards", []) |> parse_result.()
+deals = Postgrex.query!(pid, "SELECT * from set.deals", []) |> parse_result.()
+manual = Postgrex.query!(pid, "SELECT * from set.manual", []) |> parse_result.()
+```
+
+```elixir
+users
+```
+
+```elixir
+Enum.each(users, fn user ->
+  Postgrex.query!(pid_prod, "insert into users (
+    confirmed_at, email, hashed_password, 
+    id, inserted_at, name, updated_at
+  ) values (
+    $1, $2, $3, $4, $5, $6, $7
+  )", [
+    user["confirmed_at"],
+    user["email"],
+    user["hashed_password"],
+    user["id"],
+    user["inserted_at"],
+    user["name"],
+    user["updated_at"]
+  ])
+end)
+```
+
+```elixir
+manual
+```
+
+```elixir
+Enum.each(manual, fn x ->
+  Postgrex.query!(pid_prod, "insert into set.manual (
+    id, inserted_at, num_sets,
+    player_id
+  ) values (
+    $1, $2, $3, $4
+  )", [x["id"], x["inserted_at"], x["num_sets"], x["player_id"]])
+end)
+```
+
+```elixir
+status
+```
+
+```elixir
+Enum.each(status, fn x ->
+  Postgrex.query!(pid_prod, "insert into set.status (
+    game_id, id, inserted_at, 
+    status
+  ) values (
+    $1, $2, $3, $4
+  )", [x["game_id"], x["id"], x["inserted_at"], x["status"]])
+end)
+```
+
+```elixir
+players
+```
+
+```elixir
+Enum.each(players, fn x ->
+  Postgrex.query!(pid_prod, "insert into set.players (
+    game_id, id, inserted_at, 
+    user_id
+  ) values (
+    $1, $2, $3, $4
+  )", [x["game_id"], x["id"], x["inserted_at"], x["user_id"]])
+end)
+```
+
+```elixir
+games
+```
+
+```elixir
+Enum.each(games, fn x ->
+  Postgrex.query!(pid_prod, "insert into set.games (
+    created_by, id, inserted_at, 
+    name, public, updated_at
+  ) values (
+    $1, $2, $3, $4, $5, $6
+  )", [x["created_by"], x["id"], x["inserted_at"], x["name"], x["public"], x["updated_at"]])
+end)
+```

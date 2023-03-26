@@ -1,0 +1,394 @@
+# dev-sandbox
+
+## Section
+
+```elixir
+alias Backalley.Set
+alias Backalley.Accounts.User
+alias Backalley.Repo
+```
+
+```elixir
+# field :number, Ecto.Enum, values: [one: 1, two: 2, three: 3]
+# field :shape, Ecto.Enum, values: [diamond: 1, oval: 2, squiggle: 3]
+# field :color, Ecto.Enum, values: [red: 1, purple: 2, green: 3]
+# field :pattern, Ecto.Enum, values: [solid: 1, striped: 2, empty: 3]
+```
+
+```elixir
+board = %{
+  1 => %Set.Card{number: 2, shape: 2, color: 1, pattern: 2},
+  2 => %Set.Card{number: 1, shape: 1, color: 2, pattern: 1},
+  3 => %Set.Card{number: 3, shape: 1, color: 1, pattern: 3},
+  4 => %Set.Card{number: 2, shape: 1, color: 2, pattern: 1},
+  5 => %Set.Card{number: 1, shape: 2, color: 3, pattern: 2},
+  6 => %Set.Card{number: 1, shape: 3, color: 3, pattern: 1},
+  7 => %Set.Card{number: 2, shape: 1, color: 1, pattern: 2},
+  8 => %Set.Card{number: 3, shape: 1, color: 2, pattern: 2},
+  9 => %Set.Card{number: 1, shape: 2, color: 3, pattern: 3},
+  10 => %Set.Card{number: 3, shape: 2, color: 3, pattern: 3},
+  11 => %Set.Card{number: 2, shape: 1, color: 2, pattern: 2},
+  12 => %Set.Card{number: 2, shape: 2, color: 1, pattern: 1}
+  # 12 => %Set.Card{number: 1, shape: 1, color: 3, pattern: 2},
+}
+```
+
+```elixir
+!Enum.any?(Backalley.Helpers.combination(3, Map.values(board)), fn x -> Set.Card.is_set(x) end)
+```
+
+```elixir
+raw_string = "
+Alex      John
+13           10
+12           12
+12           13
+15           9
+9            15
+9            16
+15           9
+12           12
+15           9
+13           12
+11            13
+12           12
+12           8
+16           7
+12          12
+13          12
+12          11
+13          10 -2
+9            13
+12          12
+14          10
+15 -2      9
+11 -1      14
+15 -1     10
+13          12
+12          12
+10          14
+15          10 -2
+12          12
+12 -1      12
+11           14
+14          10
+13          11
+16          8 -1
+12          12
+12          11
+16          9 -1
+15 -1      9
+14          10
+11           13
+11           13
+13          12
+13          11
+18          6
+13          10
+13          12
+13          12
+14          11
+9            15
+12          13
+13          11
+11           13
+12          12
+11           14
+11           14
+11           12
+12          12
+12          11
+14          11
+11          14
+9           14
+11          14
+16          9
+13          11
+15          9
+13 -1     10
+11          14
+15          8
+14          11
+15          9
+13         10
+14         10
+12         13
+16          7
+14         11
+13         12
+16          8
+16          8
+12         12
+11          13
+10         15
+14         10
+13         11
+13         11
+15          9
+"
+```
+
+```elixir
+lines =
+  String.split(raw_string, "\n")
+  |> Enum.filter(fn x -> x not in ["", "Alex      John"] end)
+  |> Enum.map(fn x ->
+    String.split(x, "  ")
+    |> Enum.filter(fn y -> y not in [""] end)
+    |> Enum.map(fn y -> Code.eval_string(y) end)
+    |> Enum.map(fn {y, []} -> y end)
+  end)
+  |> Enum.map(fn [alex, john] -> %{alex: alex, john: john} end)
+
+lines
+```
+
+```elixir
+alias Backalley.Set
+alias Backalley.Accounts.User
+alias Backalley.Repo
+```
+
+```elixir
+john_user = Repo.get(User, 1)
+alex_user = Repo.get(User, 2)
+```
+
+```elixir
+
+```
+
+```elixir
+# lines 
+# |> Enum.map(fn %{alex: alex_sets, john: john_sets} -> 
+#     game_state = Set.create_set_game(nil, john_user)
+#     |> Set.initialize_game_state()
+#     |> Set.add_player(john_user)
+#     |> Set.add_player(alex_user)
+#     john_player = Enum.find(game_state.players, fn p -> p.player.user.id == john_user.id end)
+#     alex_player = Enum.find(game_state.players, fn p -> p.player.user.id == alex_user.id end)
+#     Set.add_manual_entry(game_state, john_sets, john_player.player)
+#     |> Set.add_manual_entry(alex_sets, alex_player.player)
+#     |> Set.update_game_status(:complete)
+#  end)
+```
+
+```elixir
+alias Backalley.Accounts
+alias Backalley.Set.SetPlayer
+alias Backalley.Set.SetGame
+alias Backalley.Set.ManualEntryEvent
+alias Backalley.Set
+alias Backalley.Repo
+import Ecto.Query
+```
+
+```elixir
+Accounts.register_user(%{email: "jmrigas@gmail.com", password: "jokesquaddddd"})
+```
+
+```elixir
+a = Accounts.get_user!(1)
+```
+
+```elixir
+IO.inspect(a)
+```
+
+```elixir
+query =
+  from(sp in SetPlayer,
+    select: %{
+      event_type: "manual_sets",
+      set_player_id: sp.id,
+      set_game_id: sp.set_game_id,
+      payload: select_merge(%{num_sets: sp.num_sets}, %{})
+    }
+  )
+
+Repo.insert_all(SetEvent, query)
+```
+
+```elixir
+games = Backalley.Set.list_set_games()
+```
+
+```elixir
+john = Accounts.get_user!(1)
+alex = Accounts.get_user!(2)
+```
+
+```elixir
+new_results = [
+  %{alex: 12, john: 13},
+  %{alex: 15, john: 9},
+  %{alex: 9, john: 15},
+  %{alex: 9, john: 16},
+  %{alex: 15, john: 9},
+  %{alex: 12, john: 12},
+  %{alex: 15, john: 9},
+  %{alex: 13, john: 12},
+  %{alex: 11, john: 13},
+  %{alex: 12, john: 12},
+  %{alex: 12, john: 8},
+  %{alex: 16, john: 7},
+  %{alex: 12, john: 12},
+  %{alex: 13, john: 12},
+  %{alex: 12, john: 11},
+  %{alex: 13, john: 8},
+  %{alex: 9, john: 13},
+  %{alex: 12, john: 12},
+  %{alex: 14, john: 10},
+  %{alex: 13, john: 9},
+  %{alex: 10, john: 14},
+  %{alex: 14, john: 10},
+  %{alex: 13, john: 12},
+  %{alex: 12, john: 12},
+  %{alex: 10, john: 14},
+  %{alex: 15, john: 8},
+  %{alex: 12, john: 12},
+  %{alex: 11, john: 12},
+  %{alex: 11, john: 14},
+  %{alex: 14, john: 10},
+  %{alex: 13, john: 11},
+  %{alex: 16, john: 7},
+  %{alex: 12, john: 12},
+  %{alex: 12, john: 11},
+  %{alex: 16, john: 8},
+  %{alex: 14, john: 9},
+  %{alex: 14, john: 10},
+  %{alex: 11, john: 13},
+  %{alex: 11, john: 13},
+  %{alex: 13, john: 12},
+  %{alex: 13, john: 11},
+  %{alex: 18, john: 6},
+  %{alex: 13, john: 10},
+  %{alex: 13, john: 12},
+  %{alex: 15, john: 9},
+  %{alex: 15, john: 9}
+]
+```
+
+```elixir
+set_game_id = Set.create_set_game(nil)
+```
+
+```elixir
+# Enum.each(new_results, fn x -> 
+#   set_game = Set.create_set_game(nil)
+#   j = Set.create_set_player(set_game, john)
+#   a = Set.create_set_player(set_game, alex)
+#   Set.create_manual_entry(j, x.john)
+#   Set.create_manual_entry(a, x.alex)
+# end)
+```
+
+```elixir
+[a | tail] = Set.list_set_games()
+```
+
+```elixir
+[b | tail2] = a.set_players
+```
+
+```elixir
+b.user
+```
+
+```elixir
+f = fn set_game_ids ->
+  query =
+    from(me in ManualEntryEvent,
+      select: [set_player_id: me.set_player_id, num_sets: sum(me.num_sets)],
+      where: me.set_player_id in ^set_player_ids,
+      group_by: me.set_player_id
+    )
+
+  Repo.all(query)
+end
+```
+
+```elixir
+f = fn set_game_ids ->
+  query =
+    from(sp in SetPlayer,
+      left_join: me in ManualEntryEvent,
+      on: [id: me.set_player_id],
+      select: {sp.id, sp.set_game_id, sp.user_id, sum(me.num_sets)},
+      where: sp.set_game_id in ^set_game_ids,
+      group_by: sp.id
+    )
+
+  Repo.all(query)
+  |> Repo.preload(:user)
+  |> Enum.map(fn x -> {x.set_game_id, x} end)
+end
+```
+
+```elixir
+set_game_ids = [4, 5, 6, 96]
+
+query =
+  from(sp in SetPlayer,
+    left_join: me in ManualEntryEvent,
+    on: me.set_player_id == sp.id,
+    # select: {sp.id, sp.set_game_id, sp.user_id, sum(me.num_sets)},
+    select: {sp, sum(me.num_sets)},
+    where: sp.set_game_id in ^set_game_ids,
+    group_by: sp.id
+  )
+
+Repo.all(query)
+|> Enum.map(fn {set_player, num_sets} -> %SetPlayer{set_player | num_sets: num_sets} end)
+```
+
+```elixir
+Repo.all(from(sg in SetGame, preload: [set_players: ^f]))
+# Repo.all(SetGame) |> Repo.preload(set_players: [:user, num_sets: ^f])
+# Repo.all from sg in SetGame, preload: [set_players: [:user]]
+```
+
+```elixir
+set_player_ids = [96, 95, 87]
+
+query =
+  from(me in ManualEntryEvent,
+    select: [set_player_id: me.set_player_id, num_sets: sum(me.num_sets)],
+    where: me.set_player_id in ^set_player_ids,
+    group_by: me.set_player_id
+  )
+
+results = Repo.all(query)
+```
+
+```elixir
+Set.list_set_games()
+```
+
+```elixir
+set_game_ids = [1, 2, 3]
+
+query =
+  from(sp in SetPlayer,
+    left_join: me in ManualEntryEvent,
+    on: me.set_player_id == sp.id,
+    select: {sp, sum(me.num_sets)},
+    where: sp.set_game_id in ^set_game_ids,
+    group_by: sp.id
+  )
+
+Repo.all(query)
+|> Enum.map(fn {set_player, num_sets} -> %SetPlayer{set_player | num_sets: num_sets} end)
+|> Repo.preload(:user)
+|> Enum.map(fn x -> {x.set_game_id, x} end)
+
+# fetch_set_players([1,2,3])
+# Repo.all from sg in SetGame, preload: [set_players: ^fetch_set_players]
+```
+
+```elixir
+a = Bcrypt.hash_pwd_salt("joke_pillows")
+
+c = Ecto.Changeset.change(john, hashed_password: a)
+john = Repo.update!(c, hashed_password: a)
+```

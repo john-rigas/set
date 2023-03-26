@@ -1,0 +1,21 @@
+<h1>Show Agricola game</h1>
+
+<%= if @live_action in [:edit] do %>
+  <.modal return_to={Routes.agricola_game_show_path(@socket, :show, @agricola_game)}>
+    <.live_component
+      module={BackalleyWeb.AgricolaGameLive.FormComponent}
+      id={@agricola_game.id}
+      title={@page_title}
+      action={@live_action}
+      agricola_game={@agricola_game}
+      return_to={Routes.agricola_game_show_path(@socket, :show, @agricola_game)}
+    />
+  </.modal>
+<% end %>
+
+<ul>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.agricola_game_show_path(@socket, :edit, @agricola_game), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.agricola_game_index_path(@socket, :index) %></span>

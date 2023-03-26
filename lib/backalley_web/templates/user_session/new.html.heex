@@ -1,0 +1,22 @@
+<.form let={f} for={@conn} action={Routes.user_session_path(@conn, :create)} as={:user} class="flex flex-wrap justify-start content-center">
+  <div class="flex flex-col">
+    <%= label f, :email, class: "m-1 text-purple-900 font-semibold" %>
+    <%= email_input f, :email, required: true, class: "m-1 text-purple-900 font-semibold border-4 border-purple-900 rounded-md bg-white" %>
+  </div>
+
+  <div class="flex flex-col">
+    <%= label f, :password, class: "m-1 text-purple-900 font-semibold" %>
+    <%= password_input f, :password, required: true, class: "m-1 text-purple-900 font-semibold border-4 border-purple-900 rounded-md bg-white" %>
+  </div>
+
+  <div class="hidden flex flex-col justify-end">
+    <%= label f, :remember_me, "Keep me logged in for 60 days", class: "m-1 text-purple-900 font-semibold"%>
+    <%= checkbox f, :remember_me, class: "m-1 bg-purple-900 text-white font-semibold rounded-md p-3" %>
+  </div>
+
+  <div class="flex flex-col justify-end">
+      <div class="m-1"></div>
+      <%= submit "Log in", class: "m-1 bg-purple-900 text-white font-semibold rounded-md p-3" %>
+  </div>
+
+</.form>

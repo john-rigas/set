@@ -1,0 +1,8 @@
+<section class="flex flex-col items-start">
+    <%= if length(@game_types) > 1 do %>
+        <%= for game_type <- @game_types do %>
+            <%= link game_type.name, to: Routes.set_index_path(@conn, :index), class: "m-1 bg-purple-900 text-white font-semibold rounded-md p-3" %>
+        <% end %>
+    <% end %>
+</section>
+
